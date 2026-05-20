@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>playlist oracle</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{background:#0d0d0d;color:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;padding:20px 16px 60px;min-height:100vh}
+h1{font-size:20px;font-weight:700;letter-spacing:-0.02em;margin:0 0 4px}
+.sub{font-size:13px;color:#444;margin:0 0 24px}
+.sec{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin:0 0 10px}
+.s-sec{color:#7c9eff}.f-sec{color:#ff7eb3}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.tag{padding:9px 16px;border-radius:99px;font-size:13px;font-weight:400;cursor:pointer;border:1.5px solid #2e2e2e;background:#1c1c1c;color:#777;font-family:inherit;line-height:1;transition:all .1s;outline:none;user-select:none}
+.tag.s-on{border:2.5px solid #7c9eff;background:#7c9eff22;color:#fff;font-weight:600}
+.tag.f-on{border:2.5px solid #ff7eb3;background:#ff7eb322;color:#fff;font-weight:600}
+.divider{height:1px;background:#1e1e1e;margin:0 0 20px}
+.empty{color:#2e2e2e;font-size:15px;text-align:center;padding:3rem 0}
+.results-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.count{font-size:13px;color:#555}
+.clear-btn{font-size:12px;color:#444;background:none;border:none;cursor:pointer;font-family:inherit}
+.card{border-radius:12px;border:1px solid #252525;background:#161616;padding:14px;margin-bottom:10px}
+.card-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.card-name{font-size:15px;font-weight:500;color:#f0f0f0;margin:0 0 3px;line-height:1.3;word-break:break-word}
+.card-sub{font-size:12px;color:#555;margin:0;line-height:1.4}
+.card-seasonal{font-size:11px;color:#333;margin:0}
+.sp-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:10px;border-radius:8px;background:#1DB954;color:#000;font-family:inherit;font-size:13px;font-weight:700;text-decoration:none;border:none;width:100%;cursor:pointer}
+.no-match{text-align:center;padding:2.5rem 0}
+.no-match p{color:#555;font-size:14px;margin:0 0 14px}
+.no-match button{font-size:13px;color:#888;background:none;border:1px solid #2a2a2a;border-radius:99px;padding:9px 20px;cursor:pointer;font-family:inherit}
+.more-btn{width:100%;padding:12px;border-radius:10px;background:#181818;border:1px solid #252525;color:#555;font-size:13px;cursor:pointer;font-family:inherit;margin-top:2px}
+</style>
+</head>
+<body>
+<h1>playlist oracle ✦</h1>
+<p class="sub">more tags = narrower results</p>
+
+<p class="sec s-sec">setting</p>
+<div class="tags" id="st"></div>
+
+<p class="sec f-sec">vibe</p>
+<div class="tags" id="ft"></div>
+
+<div class="divider"></div>
+<div id="res"><p class="empty">✦ select a setting or vibe above</p></div>
+
+<script>
+const SS=["alone","with friends","pre-party","creative flow","summer","winter","rainy","nocturnal","on the move"];
+const FF=["sad","longing","angry","euphoric","dark","comforting","calm","sexy","numb","overwhelmed","nostalgic","powerful","tender"];
+const PL=[
+  {n:"crimson supernova",sub:"or what pining feels like",url:"https://open.spotify.com/playlist/6ifOKhg8ywBoLaqtBz27PH",c:"#D85A30",s:["alone","nocturnal","rainy"],f:["longing","sad","calm","comforting","tender"]},
+  {n:"out of touch",sub:"",url:"https://open.spotify.com/playlist/0fpNMGI6m3fvtlN96CXAX9",c:"#7F77DD",s:["rainy","with friends","summer"],f:["nostalgic","euphoric"]},
+  {n:"midnight walkies",sub:"",url:"https://open.spotify.com/playlist/5hBFZOy6HoswBQCpDyHuV7",c:"#5b52d0",s:["alone","nocturnal","on the move"],f:["angry","sad","dark","overwhelmed","numb"]},
+  {n:"unravel me",sub:"",url:"https://open.spotify.com/playlist/18EFfm6TOVsWq2z10qzISZ",c:"#5DCAA5",s:["alone","rainy"],f:["sad","longing","numb","calm","comforting","dark","tender"]},
+  {n:"rainy day with an electric feel",sub:"",url:"https://open.spotify.com/playlist/4AIGp2XDCHKm3CJTe1FbwN",c:"#7F77DD",s:["alone","creative flow","rainy"],f:["numb","calm","dark","comforting","sad"]},
+  {n:"gloomy day with bloom effect",sub:"soundtrack for the gray hazy days",url:"https://open.spotify.com/playlist/1UGOpXsoXGcRrMIoFFmNYV",c:"#7F77DD",s:["alone","creative flow","rainy","winter"],f:["sad","calm","dark","numb"]},
+  {n:"within",sub:"introspective & calm",url:"https://open.spotify.com/playlist/3hJ0usG6cQAyjjaYRNzCxY",c:"#555550",s:["alone","creative flow","nocturnal"],f:["dark","sad","calm","numb","comforting","overwhelmed"]},
+  {n:"liquify",sub:"two shell is my roman empire",url:"https://open.spotify.com/playlist/5BOAjGwze4DpeACmqRudyT",c:"#888880",s:["alone","nocturnal","creative flow","rainy"],f:["calm","numb","dark","overwhelmed","comforting","tender"]},
+  {n:"you're not to blame.",sub:"makes the rain go away and the flowers grow",url:"https://open.spotify.com/playlist/1gidq9157499dt9KsPTe7I",c:"#639922",s:["alone","rainy"],f:["sad","comforting","calm","tender"]},
+  {n:"this too shall pass",sub:"",url:"https://open.spotify.com/playlist/43Rc1CzdzraU6qWYycC1DS",c:"#639922",s:["alone","creative flow","rainy"],f:["sad","calm","comforting","numb","overwhelmed","tender"]},
+  {n:"mit der kippe auf der lippe",sub:"",url:"https://open.spotify.com/playlist/76MfeQCyw6M0dlxXIceMNU",c:"#1D9E75",s:["pre-party","nocturnal","with friends"],f:["euphoric","overwhelmed","powerful","sexy"]},
+  {n:"-elevate-",sub:"",url:"https://open.spotify.com/playlist/6ZxTYX4fILUGSIU17ONbA5",c:"#D4537E",s:["pre-party","nocturnal","with friends","on the move"],f:["euphoric","sexy","powerful"]},
+  {n:"saint cecilia",sub:"",url:"https://open.spotify.com/playlist/36XhuhiglspYNi7aSfHz0H",c:"#9b59d0",s:["nocturnal","with friends"],f:["dark","overwhelmed","powerful"]},
+  {n:"200 Horses At 12,000 RPM",sub:"",url:"https://open.spotify.com/playlist/6DoU3BDxh00biQ5c3SZZjY",c:"#888880",s:["nocturnal","creative flow","on the move"],f:["dark","powerful","numb","sad","nostalgic","longing"]},
+  {n:"/ˈtʃeɪn.dʒɪŋ/",sub:"",url:"https://open.spotify.com/playlist/2KzWgAToUUyWGcegL6eLvW",c:"#D4537E",s:["with friends"],f:["euphoric","tender"]},
+  {n:"existence? confusion",sub:"",url:"https://open.spotify.com/playlist/6VvyTnpiK8WkPhjjO1fV4O",c:"#9b59d0",s:["nocturnal","alone","winter","rainy"],f:["dark","overwhelmed","numb","sad","angry"]},
+  {n:"fotzige hymnen",sub:"",url:"https://open.spotify.com/playlist/3la3OMSTFMGB8YoMWUT0y0",c:"#D4537E",s:["pre-party","nocturnal","with friends"],f:["euphoric","angry","sexy","powerful"]},
+  {n:"angery",sub:"",url:"https://open.spotify.com/playlist/1od9HrpLgW9Soa2TJjAZ6n",c:"#D85A30",s:["alone","nocturnal"],f:["angry","dark"]},
+  {n:"gym bro hymns",sub:"",url:"https://open.spotify.com/playlist/2tcMbcNCDtjzp8eynTUkWl",c:"#639922",s:["alone","on the move"],f:["euphoric","overwhelmed","powerful"]},
+  {n:"quelgeist",sub:"",url:"https://open.spotify.com/playlist/2jx5EHL57F60Rx3ZWxlsc4",c:"#D4537E",s:["pre-party","nocturnal"],f:["euphoric","sexy","dark","powerful"]},
+  {n:"fireflies",sub:"outside on the porch. warm summer breeze. with friends.",url:"https://open.spotify.com/playlist/05zLFBeFXavwwjBIj22ICw",c:"#BA7517",s:["with friends","summer"],f:["euphoric","longing","comforting","nostalgic"]},
+  {n:"cola",sub:"great for chilling and drinking coke",url:"https://open.spotify.com/playlist/4p95dSzMNUWz26cMaoG5BD",c:"#BA7517",s:["alone","with friends","creative flow"],f:["calm","comforting","tender"]},
+  {n:"I like myself more than me",sub:"italy in summer with fresh orange juice",url:"https://open.spotify.com/playlist/5nykzqLokuXVfBlMudUH4r",c:"#BA7517",s:["summer","with friends","creative flow","alone"],f:["calm","comforting","euphoric","tender"]},
+  {n:"toad & frog",sub:"carefree - a bit jazz, a bit soul, a bit oldie pop",url:"https://open.spotify.com/playlist/4AWaAelgRrTTOUlxTvEv0G",c:"#639922",s:["with friends","winter","summer"],f:["euphoric","calm","comforting"]},
+  {n:"lavender",sub:"",url:"https://open.spotify.com/playlist/6Z2856gvsL4hOpSpa2sDKc",c:"#c084fc",s:["alone","nocturnal","winter","rainy","with friends"],f:["calm","longing","sad","tender","comforting"]},
+  {n:"softness//fondness",sub:"calm & soft, with a tinge of melancholy",url:"https://open.spotify.com/playlist/7B24nQRfzrRX8Snv4AN5cj",c:"#D4537E",s:["alone","creative flow","winter"],f:["calm","sad","comforting","tender"]},
+  {n:"tranquil",sub:"",url:"https://open.spotify.com/playlist/6xfF7QxloUQlzSDIvOieJH",c:"#5DCAA5",s:["alone","creative flow","rainy","winter","with friends"],f:["calm","numb","comforting","tender"]},
+  {n:"morning playlist",sub:"",url:"https://open.spotify.com/playlist/20NR7RXpSsLlo8vWcHUwff",c:"#EF9F27",s:["alone","with friends"],f:["euphoric","comforting"]},
+  {n:"tene",sub:"very chill bg - guitars are big here",url:"https://open.spotify.com/playlist/2TCiE4SCEbXK9f7eBrY7zt",c:"#639922",s:["creative flow","rainy","summer","with friends"],f:["calm","tender"]},
+  {n:"don't steal my sunshine",sub:"lovelovelove and sunshine",url:"https://open.spotify.com/playlist/6TcYzWAq44bylxyc2NKDlc",c:"#EF9F27",s:["with friends","summer"],f:["euphoric","comforting","nostalgic","tender"]},
+  {n:"hookedonthatgroove",sub:"nostalgia//joy//togetherness",url:"https://open.spotify.com/playlist/6bicvRmiWrbgAcWbnNvPbS",c:"#EF9F27",s:["with friends","summer"],f:["euphoric","longing","nostalgic","powerful"]},
+  {n:"happypomelomusic",sub:"upbeat schtuff - 2 jive 2",url:"https://open.spotify.com/playlist/2Gf28Kj2KgTWZicoQpU0Be",c:"#EF9F27",s:["with friends","summer"],f:["euphoric"]},
+  {n:"one call away",sub:"friendship//easygoing//summer//some melancholy",url:"https://open.spotify.com/playlist/1w50Mxa5KuKq6mjzie4qNq",c:"#EF9F27",s:["with friends","summer","alone"],f:["comforting","calm","longing","sad"]},
+  {n:"wet~dreams",sub:"",url:"https://open.spotify.com/playlist/12Ly32qgtQ3C6kGvulMKIf",c:"#D4537E",s:["alone","nocturnal"],f:["sexy","dark","powerful"]},
+  {n:"sticky situations",sub:"",url:"https://open.spotify.com/playlist/7gJls9Rc76Cmo3nNf2VkPC",c:"#888880",s:["nocturnal","creative flow"],f:["sexy","numb","dark","calm","comforting"]},
+  {n:"lemonade serenade",sub:"",url:"https://open.spotify.com/playlist/6dtGWEm4knkBs2X7pMkn8B",c:"#BA7517",s:["with friends"],f:["calm","longing","comforting","tender"]},
+  {n:"stuffy summer memories",sub:"",url:"https://open.spotify.com/playlist/1xTX73bX549xNiY8DpWK4T",c:"#6ea8e8",s:["alone","creative flow"],f:["longing","dark","calm","nostalgic"]},
+  {n:"saddie baddie diva",sub:"",url:"https://open.spotify.com/playlist/0S26ZLUZ7kVjsan7cOOkKQ",c:"#D4537E",s:["pre-party","with friends","alone"],f:["longing","sad","euphoric","nostalgic"]},
+  {n:"sterne sehen",sub:"",url:"https://open.spotify.com/playlist/3cUCgvuZ6udhwt85extkeS",c:"#6ea8e8",s:["alone","nocturnal","winter"],f:["longing","sad","nostalgic","tender"]},
+  {n:"good·byes & lemonades.",sub:"",url:"https://open.spotify.com/playlist/1aejm8L4VDR2CmlL0RgUS7",c:"#6ea8e8",s:["with friends","summer","creative flow","on the move"],f:["longing","euphoric","nostalgic"]},
+  {n:"this one particular nostalgic feeling",sub:"",url:"https://open.spotify.com/playlist/6A2IzuvOIiUbR96aJ494Ak",c:"#6ea8e8",s:["alone","creative flow","rainy"],f:["longing","calm","nostalgic","sad","comforting"]},
+  {n:"jonas",sub:"",url:"https://open.spotify.com/playlist/1g2e0iFdNLAWlatVuBSGbG",c:"#6ea8e8",s:[],f:["nostalgic","euphoric"]},
+  {n:"checkste",sub:"journey through music, listen in order",url:"https://open.spotify.com/playlist/4KqoiKQiBd1XzgGRW1jIsM",c:"#BA7517",s:["with friends","summer","alone","creative flow"],f:["comforting","calm","nostalgic","euphoric"]},
+  {n:"metamorphosis for dummies",sub:"",url:"https://open.spotify.com/playlist/5xRaQmoNWiJQLwfMRbCGiR",c:"#639922",s:["with friends","creative flow","summer","on the move"],f:["euphoric","calm","tender","comforting"]},
+  {n:"dark/weird",sub:"",url:"https://open.spotify.com/playlist/6QPMLgQUoTvHYYvtfosgoH",c:"#555550",s:["alone","nocturnal","creative flow"],f:["dark","numb","calm"]},
+  {n:"guilty pleasures",sub:"",url:"https://open.spotify.com/playlist/0PnRKgkAR6NzN4UQjJ5jZ9",c:"#D85A30",s:["alone"],f:["dark","sad","longing","nostalgic","comforting","overwhelmed"]},
+  {n:"shut up, charles",sub:"",url:"https://open.spotify.com/playlist/0B5I6UX1MsqiBel0uzryA5",c:"#BA7517",s:["alone","winter","creative flow"],f:["longing","calm","sad","comforting","nostalgic"]},
+  {n:"songs that ~did~ things to me",sub:"",url:"https://open.spotify.com/playlist/5LRk39inYhPURMcAAvKFN9",c:"#555550",s:["alone","creative flow","nocturnal"],f:["dark","longing","euphoric","sad"]},
+  {n:"shit I found on the road",sub:"",url:"https://open.spotify.com/playlist/3OWZbHOBG07hnmW70iNeQp",c:"#888880",s:["alone","creative flow","on the move"],f:["longing","calm","sad","nostalgic"]},
+  {n:"g.o.a.t.",sub:"",url:"https://open.spotify.com/playlist/7BQS5lqdSUufn60m2j68O3",c:"#D85A30",s:["alone","creative flow"],f:["longing","sad","dark","euphoric","nostalgic"]},
+  {n:"pochitas playlist",sub:"",url:"https://open.spotify.com/playlist/2A63EAjE2AroLRT3pWUbic",c:"#D4537E",s:["creative flow","alone"],f:["euphoric","powerful","overwhelmed","comforting","longing"]},
+  {n:"en vogue fall 23",sub:"seasonal",url:"https://open.spotify.com/playlist/0ifuXSCzByJwY6bVLIjc5e",c:"#BA7517",s:["nocturnal","pre-party","with friends"],f:["euphoric","overwhelmed","nostalgic"]},
+  {n:"en vogue winter 23",sub:"seasonal",url:"https://open.spotify.com/playlist/7w4Upm2oK1odiLM2KUYAC8",c:"#6ea8e8",s:["alone","winter"],f:["longing","calm","overwhelmed"]},
+  {n:"en vogue spring 24",sub:"seasonal",url:"https://open.spotify.com/playlist/4GTVqGE53Zl9cRsAmyRErI",c:"#639922",s:["pre-party","with friends"],f:["euphoric","overwhelmed","powerful"]},
+  {n:"en vogue l'été 24",sub:"seasonal · brat summer",url:"https://open.spotify.com/playlist/7elg9pjSQP2CDkZjvrAvdH",c:"#D4537E",s:["summer","with friends","pre-party"],f:["euphoric","overwhelmed","powerful"]},
+  {n:"en vogue autumn 24",sub:"seasonal",url:"https://open.spotify.com/playlist/4Tq3CMx596D4R3BLGS1ZOX",c:"#D85A30",s:["nocturnal","creative flow"],f:["dark","euphoric","overwhelmed"]},
+  {n:"en vogue winter 24",sub:"seasonal",url:"https://open.spotify.com/playlist/1WLpyJs0chXkBjjz9S5R3m",c:"#6ea8e8",s:["alone","nocturnal","winter"],f:["dark","sad","numb","calm"]},
+  {n:"en vogue spring 25",sub:"seasonal",url:"https://open.spotify.com/playlist/22LnCDDyMCo0pkcyPis549",c:"#639922",s:["alone","creative flow","rainy"],f:["sad","dark","numb"]},
+  {n:"en vogue summer 25",sub:"seasonal · first summer on T",url:"https://open.spotify.com/playlist/1Fde3zdbaAtsY6oSIBrqXB",c:"#D4537E",s:["summer","pre-party"],f:["euphoric","overwhelmed","powerful"]},
+  {n:"en vogue fall 25",sub:"seasonal",url:"https://open.spotify.com/playlist/4XqwRKSxc55yvt0mclZzVr",c:"#D85A30",s:["creative flow","nocturnal"],f:["euphoric","dark","overwhelmed"]},
+  {n:"en vogue l'hiver 25",sub:"seasonal",url:"https://open.spotify.com/playlist/2Scmf3eKGgoeqww3V4cMsA",c:"#6ea8e8",s:["alone","winter","nocturnal"],f:["sad","dark","calm","numb","longing"]},
+  {n:"en vogue spring 26",sub:"seasonal · current",url:"https://open.spotify.com/playlist/2o60MuKhP6iU7THq2RM0yi",c:"#639922",s:["creative flow","alone","rainy"],f:["sad","calm","dark","longing"]},
+];
+
+const SVG_SPOTIFY=`<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>`;
+
+let selS=new Set(),selF=new Set(),showAll=false;
+const LIMIT=5;
+
+function buildTags(elId,items,sel,cls,cb){
+  const el=document.getElementById(elId);
+  el.innerHTML='';
+  items.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tag'+(sel.has(t)?' '+cls:'');
+    b.textContent=t;
+    b.onclick=()=>cb(t);
+    el.appendChild(b);
+  });
+}
+
+function render(){
+  buildTags('st',SS,selS,'s-on',id=>{selS.has(id)?selS.delete(id):selS.add(id);showAll=false;render();});
+  buildTags('ft',FF,selF,'f-on',id=>{selF.has(id)?selF.delete(id):selF.add(id);showAll=false;render();});
+
+  const res=document.getElementById('res');
+  const has=selS.size>0||selF.size>0;
+  if(!has){res.innerHTML='<p class="empty">✦ select a setting or vibe above</p>';return;}
+
+  const matches=PL.filter(pl=>{
+    for(const s of selS)if(!pl.s.includes(s))return false;
+    for(const f of selF)if(!pl.f.includes(f))return false;
+    return true;
+  });
+
+  if(!matches.length){
+    res.innerHTML='<div class="no-match"><p>nothing matches all of those</p><button onclick="clearAll()">clear filters</button></div>';
+    return;
+  }
+
+  const shown=showAll?matches:matches.slice(0,LIMIT);
+  let h=`<div class="results-hdr"><span class="count">${matches.length} playlist${matches.length!==1?'s':''}</span><button class="clear-btn" onclick="clearAll()">clear ×</button></div>`;
+
+  shown.forEach(pl=>{
+    const isSeasonal=pl.sub==='seasonal'||pl.sub?.startsWith('seasonal');
+    const subHtml=pl.sub&&!isSeasonal?`<p class="card-sub">${pl.sub}</p>`:isSeasonal?`<p class="card-seasonal">seasonal</p>`:'';
+    h+=`<div class="card"><div class="card-top"><div class="dot" style="background:${pl.c}"></div><div><p class="card-name">${pl.n}</p>${subHtml}</div></div><a class="sp-btn" href="${pl.url}" target="_blank" rel="noopener">${SVG_SPOTIFY} open in Spotify</a></div>`;
+  });
+
+  if(matches.length>LIMIT&&!showAll){
+    h+=`<button class="more-btn" onclick="showMore()">show ${matches.length-LIMIT} more</button>`;
+  }
+  res.innerHTML=h;
+}
+
+function clearAll(){selS.clear();selF.clear();showAll=false;render();}
+function showMore(){showAll=true;render();}
+render();
+</script>
+</body>
+</html>
